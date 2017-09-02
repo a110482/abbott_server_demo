@@ -12,6 +12,9 @@ def pdf_path(instance, filename):
 class Tags(models.Model):
     tag = models.TextField(unique=True)
 
+    def __unicode__(self):
+        return unicode(self.tag)
+
 
 class PDFDateBase(models.Model):
     pdf_file = models.FileField(upload_to='./', blank=True)
