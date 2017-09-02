@@ -16,9 +16,13 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from core_file.views import *
+from django.conf.urls import include
+
 from django.views.decorators.csrf import csrf_exempt
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^pdf_dir/(?P<file_name>[^/]+)', pdf_dir),
     url(r'^demo_url/', demo_url),
+    url(r'^multiple_files/', include("core_file.urls",
+        namespace="multiple_files", app_name="multiple_files")),
 ]

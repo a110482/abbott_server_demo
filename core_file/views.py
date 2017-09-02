@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from models import *
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.shortcuts import render_to_response
+
+from .models import Attachment
 import json
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
@@ -81,17 +84,39 @@ def pdf_dir(request, file_name):
     return response
 
 
+def add_attachment(request):
+    # web 上傳頁面用的
+    if request.method == "POST":
+        tag = request.POST['tag']
+        files = request.FILES.getlist('myfiles')
+        for number, a_file in enumerate(files):
+            tags = ['a', 'b', 'c']
+            tagObjectList = []
+            for tag_text in tags:
+                instance = Tags(
+                    tag=tag_text
+                )
+                instance.save()
+                tagObjectList.append(instance)
+
+            instance = PDFDateBase(
+                # tag=tag,
+                file_name=a_file.name,
+                pdf_file=a_file
+            )
+            instance.save()
+            for tagObject in tagObjectList:
+                instance.tag_list.add(tagObject)
+            instance.save()
 
 
+        request.session['number_of_files'] = number + 1
+        return redirect("multiple_files:add_attachment_done")
+
+    return render(request, "multiple_files/add_attachment.html")
 
 
+def add_attachment_done(request):
+    return render_to_response('multiple_files/add_attachment_done.html',
+        context={"num_files": request.session["number_of_files"]})
 
-
-
-
-
-
-
-
-
-# Create your views here.
