@@ -70,7 +70,8 @@ def demo_url(request):
 
 def pdf_dir(request, file_name):
     response = HttpResponse(content_type='application/pdf')
-    #response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
+    # 強制user下載的code
+    # response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
 
     print "-----------------"
     print './pdf_dir/%s'%(file_name)
