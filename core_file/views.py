@@ -93,11 +93,15 @@ def add_attachment(request):
             tags = ['a', 'b', 'c']
             tagObjectList = []
             for tag_text in tags:
-                instance = Tags(
-                    tag=tag_text
-                )
-                instance.save()
-                tagObjectList.append(instance)
+                query = Tags.objects.filter(tag=tag_text)
+                if query.count() > 0:
+                    tagObjectList.append(query.all()[0])
+                else:
+                    instance = Tags(
+                        tag=tag_text
+                    )
+                    instance.save()
+                    tagObjectList.append(instance)
 
             instance = PDFDateBase(
                 # tag=tag,
