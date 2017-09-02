@@ -4,9 +4,10 @@ from models import *
 from django.shortcuts import render
 import json
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.template.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt
+import re
 
 
 @csrf_exempt
@@ -16,15 +17,18 @@ def demo_url(request):
     mode = request_data["mode"]
     if mode == "get_query_advice":
         search_text = request_data_msg["search_text"]
-        tag_query = Tags.objects.filter(tag__icontains=search_text)
+        search_list = re.split(r'\s*', search_text)
+        # 關鍵字清單
+
+        if '' in search_list:
+            search_list.remove('')
         query = PDFDateBase.objects.filter(
-            Q(file_name__icontains=search_text) |
-            Q(tag_list__in=tag_query)
-        ).order_by('-id').all()
-        return_dic = {
-            "result_list": []
-        }
-        append_isd = []
+            reduce(lambda x, y: x | y, [Q(file_name__icontains=word) for word in search_list]) |
+            reduce(lambda x, y: x | y, [Q(tag_list__tag__icontains=word) for word in search_list])
+        ).distinct().all()
+
+        result_list = []
+        # 製作結果清單
         for data_s in query:
             temp_tag_list = []
             for tag_text in data_s.tag_list.all():
@@ -33,14 +37,47 @@ def demo_url(request):
                 "id": str(data_s.id),
                 "file_name": data_s.file_name,
                 "file_path": str(data_s.pdf_file),
-                "tags": temp_tag_list
+                "tags": temp_tag_list,
+                "point": 0
             }
-            if data_s.id not in append_isd:
-                append_isd.append(data_s.id)
-                return_dic["result_list"].append(temp_dic)
+            result_list.append(temp_dic)
+
+        # 製作相關度分數  速度待驗證
+        # for key_word in search_list:
+
+        # 依照相關度排序
+        def result_relative(a, b):
+            # 所有元素都轉成小寫才做比對
+            def str_lower(str_in):
+                return str_in.lower()
+            # 兩個元素 越符合條件者分數越大
+            a_point = 0
+            b_point = 0
+            for key_word in search_list:
+                if key_word.lower() in a["file_name"].lower() or key_word in map(str_lower, a["tags"]):
+                    a_point += 1
+                if key_word.lower() in b["file_name"].lower() or key_word in map(str_lower, b["tags"]):
+                    b_point += 1
+            if a_point > b_point:
+                return -1
+            return 1
+        new_result_list = sorted(result_list, result_relative)
+        return_dic = {
+            "result_list": new_result_list
+        }
         return JsonResponse(return_dic)
 
 
+def pdf_dir(request, file_name):
+    response = HttpResponse(content_type='application/pdf')
+    #response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
+
+    print "-----------------"
+    print './pdf_dir/%s'%(file_name)
+    with open('./pdf_dir/%s'%(file_name)) as f:
+        c = f.read()
+    response.write(c)
+    return response
 
 
 

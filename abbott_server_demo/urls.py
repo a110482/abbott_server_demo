@@ -19,5 +19,6 @@ from core_file.views import *
 from django.views.decorators.csrf import csrf_exempt
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^pdf_dir/(?P<file_name>[^/]+)', pdf_dir),
     url(r'^demo_url/', demo_url),
 ]
