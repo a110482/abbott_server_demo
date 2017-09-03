@@ -5,13 +5,37 @@
 {% block title %}Adding Multiple Files{% endblock %}
 
 {% block content %}
+    <nav class="navbar navbar-expand-lg navbar-light " style="background-color: #1a9cdb; color: whitesmoke; margin-bottom: 8vh">Abbott PDF Database bulk upload</nav>
+    <div class="container">
+    <div class="row">
+        <div class="col">
+          <p>
+            <p>
+            <p>
+            <p>
+            <p>
+    </div>
+    </div>
     <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <p>
-            <label for="id_tag">Tags</label>
-            <input id="id_tag" type="text" maxlength="18" name="tag">
-        </p>
-        <input type="file" name="myfiles" multiple>
-        <button type="submit">{% trans "Save" %}</button>
+        <div class="form-group row" style="margin-bottom: 2vh">
+{#            <label for="id_tag" class="col-sm-2 col-form-label"> 標籤 </label>#}
+            <div class="col-sm-12">
+                <input class="form-control" id="id_tag" type="text" maxlength="200" name="tag" placeholder="輸入標籤，每個標籤以＃開頭">
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12">
+                <span class="btn btn-lg btn-block btn-dark btn-file">
+                選擇擋案 <input type="file" name="myfiles" multiple>
+                </span>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12">
+                <button class="btn btn-success" type="submit" style="float: right; background-color: #1a9cdb">{% trans "Save" %}</button>
+            </div>
+        </div>
     </form>
+    </div>
 {% endblock %}
