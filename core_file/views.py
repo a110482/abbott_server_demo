@@ -89,31 +89,31 @@ def add_attachment(request):
     if request.method == "POST":
         tag = request.POST['tag']
         files = request.FILES.getlist('myfiles')
-        for number, a_file in enumerate(files):
-            tags = ['a', 'b', 'c']
-            tagObjectList = []
-            for tag_text in tags:
-                query = Tags.objects.filter(tag=tag_text)
-                if query.count() > 0:
-                    tagObjectList.append(query.all()[0])
-                else:
-                    instance = Tags(
-                        tag=tag_text
-                    )
-                    instance.save()
-                    tagObjectList.append(instance)
+        tag = re.sub(r'\s', '', tag)
+        tags = re.split(r'[#]', tag)
+        if '' in tags:
+            tags.remove('')
+        tag_object_list = []
+        for tag_text in tags:
+            query = Tags.objects.filter(tag=tag_text)
+            if query.count() > 0:
+                tag_object_list.append(query.all()[0])
+            else:
+                instance = Tags(
+                    tag=tag_text
+                )
+                instance.save()
+                tag_object_list.append(instance)
 
+        for number, a_file in enumerate(files):
             instance = PDFDateBase(
                 # tag=tag,
                 file_name=a_file.name,
                 pdf_file=a_file
             )
             instance.save()
-            for tagObject in tagObjectList:
-                instance.tag_list.add(tagObject)
+            instance.tag_list.add(*tag_object_list)
             instance.save()
-
-
         request.session['number_of_files'] = number + 1
         return redirect("multiple_files:add_attachment_done")
 
